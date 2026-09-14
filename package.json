@@ -1,0 +1,23 @@
+{
+  "name": "oneline",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "ONELINE - one stroke, physics, one puzzle a day.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit false --pretty",
+    "fuzz": "tsx scripts/fuzz.ts"
+  },
+  "devDependencies": {
+    "@types/matter-js": "^0.19.7",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "matter-js": "^0.20.0"
+  }
+}

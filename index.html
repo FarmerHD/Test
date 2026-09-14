@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ONELINE</title>
+    <meta name="description" content="One stroke. Physics. One puzzle a day." />
+  </head>
+  <body>
+    <main id="app">
+      <header class="hud">
+        <span class="hud-title">ONELINE</span>
+        <span class="hud-level" id="hud-level">Level —</span>
+      </header>
+
+      <div class="field-wrap">
+        <canvas id="field" aria-label="Puzzle field. Draw one stroke with a pointer."></canvas>
+      </div>
+
+      <div class="ink">
+        <div class="ink-bar"><i id="ink-fill"></i></div>
+        <div class="ink-read"><span id="ink-value">0</span> / <span id="ink-budget">0</span> ink</div>
+      </div>
+
+      <section class="sheet" id="sheet" hidden>
+        <p class="sheet-verdict" id="sheet-verdict"></p>
+        <dl class="sheet-stats">
+          <div><dt>Ink</dt><dd id="stat-ink">—</dd></div>
+          <div><dt>Steps</dt><dd id="stat-steps">—</dd></div>
+          <div><dt>Attempt</dt><dd id="stat-attempt">—</dd></div>
+        </dl>
+        <button type="button" id="retry">Draw again</button>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
