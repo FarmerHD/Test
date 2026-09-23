@@ -1,0 +1,440 @@
+Screens:
+  scrAntrag:
+    Properties:
+      Fill: =AppTheme.NearWhite
+      LoadingSpinnerColor: =AppTheme.DarkBlue
+      OnVisible: |
+        =Set(varAktuelleSeite, "Antrag");
+        Set(varFK, IfError(Office365Users.ManagerV2(User().Email), Blank()));
+        Reset(txtFKEmail)
+    Children:
+      - Container_Header_A:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =AppTheme.OffWhite
+            Height: =32
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Horizontal
+            PaddingLeft: =12
+            PaddingRight: =12
+            Width: =Parent.Width
+          Children:
+            - Label_AppTitle_A:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =AppTheme.DarkGray
+                  Size: =11
+                  Text: ="Neuer Antrag"
+                  Width: =Parent.Width
+      - Container_Content_A:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =AppTheme.NearWhite
+            Height: =Parent.Height - Container_Header_A.Height
+            Width: =Parent.Width
+            Y: =32
+          Children:
+            - Card_Antrag:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =AppTheme.PaleGray
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =AppTheme.White
+                  Height: =700
+                  Width: =620
+                  X: =(Parent.Width - Self.Width) / 2
+                  Y: =20
+                Children:
+                  - lblAntragHeading:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkBlue
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        Size: =18
+                        Text: ="Bestellanforderung"
+                        Width: =400
+                        X: =24
+                        Y: =16
+                  - lblPflichtHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="* Pflichtfeld"
+                        Width: =200
+                        X: =24
+                        Y: =48
+                  - lblFachbereichLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Fachbereich *"
+                        Width: =130
+                        X: =24
+                        Y: =76
+                  - ddFachbereich:
+                      Control: ModernDropdown@1.0.3
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        ItemDisplayText: =ThisItem.Value
+                        Items: =Choices(Antraege.Fachbereich)
+                        Width: =420
+                        X: =164
+                        Y: =76
+                  - lblWerkLabel_A:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Werk *"
+                        Width: =130
+                        X: =24
+                        Y: =118
+                  - ddWerkAntrag:
+                      Control: ModernDropdown@1.0.3
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        ItemDisplayText: =ThisItem.Value
+                        Items: =Choices(Antraege.Werk)
+                        Width: =420
+                        X: =164
+                        Y: =118
+                  - lblArtikelnummerLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Artikelnummer *"
+                        Width: =130
+                        X: =24
+                        Y: =160
+                  - txtArtikelnummer:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="z. B. 4711-0815"
+                        Width: =420
+                        X: =164
+                        Y: =160
+                  - lblStueckzahlLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Stückzahl *"
+                        Width: =130
+                        X: =24
+                        Y: =202
+                  - txtStueckzahl:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="0"
+                        Width: =200
+                        X: =164
+                        Y: =202
+                  - lblWertLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Gesamtwert (€) *"
+                        Width: =130
+                        X: =24
+                        Y: =244
+                  - txtWert:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="0,00"
+                        Width: =200
+                        X: =164
+                        Y: =244
+                  - lblWegHinweis:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =If(IfError(Value(txtWert.Text), 0) > nfWertgrenze, AppTheme.Orange, AppTheme.MidGray)
+                        Height: =35
+                        Size: =10
+                        Text: |-
+                          =If(
+                              IfError(Value(txtWert.Text), 0) > nfWertgrenze,
+                              "Freigabe: FK → Geschäftsführung → MaWi",
+                              "Freigabe: FK → MaWi"
+                          )
+                        Width: =210
+                        X: =374
+                        Y: =244
+                  - lblKostenstelleLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Kostenstelle"
+                        Width: =130
+                        X: =24
+                        Y: =286
+                  - txtKostenstelle:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="Kostenstelle"
+                        Width: =200
+                        X: =164
+                        Y: =286
+                  - lblLagerortLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Wo liegt die Ware"
+                        Width: =130
+                        X: =24
+                        Y: =328
+                  - txtLagerort:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="Lagerort / Halle / Regal"
+                        Width: =420
+                        X: =164
+                        Y: =328
+                  - lblBemerkungLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Bemerkung"
+                        Width: =130
+                        X: =24
+                        Y: =370
+                  - txtBemerkung:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Fill: =AppTheme.OffWhite
+                        Height: =60
+                        Placeholder: ="Optional"
+                        Width: =420
+                        X: =164
+                        Y: =370
+                  - lblFKLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Führungskraft *"
+                        Width: =130
+                        X: =24
+                        Y: =442
+                  - txtFKEmail:
+                      Control: ModernTextInput@1.1.2
+                      Properties:
+                        Default: =varFK.mail
+                        Fill: =AppTheme.OffWhite
+                        Height: =35
+                        Placeholder: ="E-Mail der Führungskraft"
+                        Width: =420
+                        X: =164
+                        Y: =442
+                  - lblFKName:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: |-
+                          =If(
+                              !IsBlank(varFK.mail) && Lower(Trim(txtFKEmail.Text)) = Lower(varFK.mail),
+                              "Aus Microsoft 365 ermittelt: " & varFK.displayName,
+                              "Keine Führungskraft gefunden – bitte E-Mail eintragen."
+                          )
+                        Width: =420
+                        X: =164
+                        Y: =478
+                  - lblAnhaengeLabel:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =35
+                        Text: ="Dateien"
+                        Width: =130
+                        X: =24
+                        Y: =506
+                  - lblAnhaengePlatzhalter:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Formular frmAnhaenge hier platzieren (siehe README)"
+                        Width: =420
+                        X: =164
+                        Y: =506
+                  - lblValidierung:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.LightRed
+                        Height: =24
+                        Size: =10
+                        Text: |-
+                          =With(
+                              {
+                                  fehlt: Filter(
+                                      Table(
+                                          {f: "Fachbereich", ok: !IsBlank(ddFachbereich.Selected.Value)},
+                                          {f: "Werk", ok: !IsBlank(ddWerkAntrag.Selected.Value)},
+                                          {f: "Artikelnummer", ok: !IsBlank(Trim(txtArtikelnummer.Text))},
+                                          {f: "Stückzahl", ok: IfError(Value(txtStueckzahl.Text), 0) > 0},
+                                          {f: "Gesamtwert", ok: IfError(Value(txtWert.Text), 0) > 0},
+                                          {f: "Führungskraft", ok: !IsBlank(Trim(txtFKEmail.Text))}
+                                      ),
+                                      !ok
+                                  )
+                              },
+                              If(CountRows(fehlt) > 0, "Fehlt: " & Concat(fehlt, f, ", "), "")
+                          )
+                        Width: =560
+                        X: =24
+                        Y: =610
+                  - btnAbsenden:
+                      Control: ModernButton@1.0.0
+                      Properties:
+                        BasePaletteColor: =AppTheme.DarkBlue
+                        DisplayMode: |-
+                          =If(
+                              !IsBlank(ddFachbereich.Selected.Value)
+                                  && !IsBlank(ddWerkAntrag.Selected.Value)
+                                  && !IsBlank(Trim(txtArtikelnummer.Text))
+                                  && IfError(Value(txtStueckzahl.Text), 0) > 0
+                                  && IfError(Value(txtWert.Text), 0) > 0
+                                  && !IsBlank(Trim(txtFKEmail.Text)),
+                              DisplayMode.Edit,
+                              DisplayMode.Disabled
+                          )
+                        Height: =35
+                        OnSelect: |-
+                          =Set(
+                              varAntrag,
+                              IfError(
+                                  Patch(
+                                      Antraege,
+                                      Defaults(Antraege),
+                                      frmAnhaenge.Updates,
+                                      {
+                                          Titel: Trim(txtArtikelnummer.Text) & " – " & Value(txtStueckzahl.Text) & " Stk.",
+                                          Fachbereich: {Value: ddFachbereich.Selected.Value},
+                                          Werk: {Value: ddWerkAntrag.Selected.Value},
+                                          Artikelnummer: Trim(txtArtikelnummer.Text),
+                                          Stueckzahl: Value(txtStueckzahl.Text),
+                                          Wert: Value(txtWert.Text),
+                                          Kostenstelle: Trim(txtKostenstelle.Text),
+                                          Lagerort: Trim(txtLagerort.Text),
+                                          Bemerkung: txtBemerkung.Text,
+                                          Status: {Value: "Wartet auf FK"},
+                                          AntragstellerName: User().FullName,
+                                          AntragstellerEmail: User().Email,
+                                          FKName: If(
+                                              Lower(Trim(txtFKEmail.Text)) = Lower(varFK.mail),
+                                              varFK.displayName,
+                                              Trim(txtFKEmail.Text)
+                                          ),
+                                          FKEmail: Trim(txtFKEmail.Text)
+                                      }
+                                  ),
+                                  Blank()
+                              )
+                          );
+                          If(
+                              IsBlank(varAntrag.ID),
+                              Notify("Antrag konnte nicht gespeichert werden.", NotificationType.Error),
+
+                              Office365Outlook.SendEmailV2(
+                                  varAntrag.FKEmail,
+                                  "Freigabe erforderlich: Bestellanforderung #" & varAntrag.ID,
+                                  "<p>Hallo " & varAntrag.FKName & ",</p>" &
+                                  "<p>" & User().FullName & " hat eine Bestellanforderung eingereicht. Bitte prüfen und freigeben.</p>" &
+                                  nfMailDetails
+                              );
+                              Notify("Antrag #" & varAntrag.ID & " eingereicht.", NotificationType.Success);
+                              ResetForm(frmAnhaenge);
+                              Reset(ddFachbereich);
+                              Reset(ddWerkAntrag);
+                              Reset(txtArtikelnummer);
+                              Reset(txtStueckzahl);
+                              Reset(txtWert);
+                              Reset(txtKostenstelle);
+                              Reset(txtLagerort);
+                              Reset(txtBemerkung);
+                              Navigate(scrMeineAntraege, ScreenTransition.Fade)
+                          )
+                        Text: ="Antrag absenden"
+                        Width: =200
+                        X: =164
+                        Y: =640
+                  - btnZuruecksetzen:
+                      Control: ModernButton@1.0.0
+                      Properties:
+                        BasePaletteColor: =AppTheme.MidGray
+                        Height: =35
+                        OnSelect: |-
+                          =ResetForm(frmAnhaenge);
+                          Reset(ddFachbereich);
+                          Reset(ddWerkAntrag);
+                          Reset(txtArtikelnummer);
+                          Reset(txtStueckzahl);
+                          Reset(txtWert);
+                          Reset(txtKostenstelle);
+                          Reset(txtLagerort);
+                          Reset(txtBemerkung);
+                          Reset(txtFKEmail)
+                        Text: ="Zurücksetzen"
+                        Width: =200
+                        X: =384
+                        Y: =640
+            - btnNavAntrag_A:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.DarkBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrAntrag, ScreenTransition.Fade)
+                  Text: ="Neuer Antrag"
+                  Width: =250
+                  X: =10
+                  Y: =30
+            - btnNavMeine_A:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.LightBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrMeineAntraege, ScreenTransition.Fade)
+                  Text: ="Meine Anträge"
+                  Width: =250
+                  X: =10
+                  Y: =70
+            - btnNavFreigaben_A:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.LightBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrFreigaben, ScreenTransition.Fade)
+                  Text: ="Freigaben"
+                  Width: =250
+                  X: =10
+                  Y: =110

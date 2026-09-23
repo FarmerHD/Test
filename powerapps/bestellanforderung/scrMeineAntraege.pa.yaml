@@ -1,0 +1,296 @@
+Screens:
+  scrMeineAntraege:
+    Properties:
+      Fill: =AppTheme.NearWhite
+      LoadingSpinnerColor: =AppTheme.DarkBlue
+      OnVisible: |
+        =Set(varAktuelleSeite, "Meine Anträge");
+        Refresh(Antraege)
+    Children:
+      - Container_Header_M:
+          Control: GroupContainer@1.5.0
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =AppTheme.OffWhite
+            Height: =32
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutDirection: =LayoutDirection.Horizontal
+            PaddingLeft: =12
+            PaddingRight: =12
+            Width: =Parent.Width
+          Children:
+            - Label_AppTitle_M:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Center
+                  Color: =AppTheme.DarkGray
+                  Size: =11
+                  Text: ="Meine Anträge"
+                  Width: =Parent.Width
+      - Container_Content_M:
+          Control: GroupContainer@1.5.0
+          Variant: ManualLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =AppTheme.NearWhite
+            Height: =Parent.Height - Container_Header_M.Height
+            Width: =Parent.Width
+            Y: =32
+          Children:
+            - Card_Filter_M:
+                Control: GroupContainer@1.5.0
+                Variant: ManualLayout
+                Properties:
+                  BorderColor: =AppTheme.PaleGray
+                  BorderThickness: =1
+                  DropShadow: =DropShadow.None
+                  Fill: =AppTheme.White
+                  Height: =110
+                  Width: =620
+                  X: =(Parent.Width - Self.Width) / 2
+                  Y: =20
+                Children:
+                  - lblMeineHeading:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkBlue
+                        FontWeight: =FontWeight.Bold
+                        Height: =30
+                        Size: =18
+                        Text: ="Meine Anträge"
+                        Width: =400
+                        X: =24
+                        Y: =16
+                  - lblStatusFilterLabel_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =32
+                        Text: ="Status"
+                        Width: =95
+                        X: =24
+                        Y: =60
+                  - ddStatusFilter_M:
+                      Control: ModernDropdown@1.0.3
+                      Properties:
+                        Default: |
+                          ={Value: "Alle"}
+                        Fill: =AppTheme.OffWhite
+                        ItemDisplayText: =ThisItem.Value
+                        Items: =["Alle", "Wartet auf FK", "Wartet auf GF", "Bei MaWi", "Abgeschlossen", "Abgelehnt"]
+                        Width: =200
+                        X: =129
+                        Y: =60
+            - lblErgebnisseTitel_M:
+                Control: Label@2.5.1
+                Properties:
+                  Color: =AppTheme.MidGray
+                  Height: =20
+                  Size: =10
+                  Text: ="ANTRÄGE"
+                  Width: =300
+                  X: =(Parent.Width - 620) / 2
+                  Y: =146
+            - lblAnzahl_M:
+                Control: Label@2.5.1
+                Properties:
+                  Align: =Align.Right
+                  Color: =AppTheme.MidGray
+                  Height: =24
+                  Size: =11
+                  Text: =CountRows(galMeineAntraege.AllItems) & " Anträge"
+                  Width: =300
+                  X: =(Parent.Width - 620) / 2 + 320
+                  Y: =142
+            - galMeineAntraege:
+                Control: Gallery@2.15.0
+                Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+                Properties:
+                  BorderColor: =AppTheme.PaleGray
+                  BorderThickness: =1
+                  Fill: =AppTheme.White
+                  Height: =Parent.Height - Self.Y - 20
+                  Items: |
+                    =Sort(
+                        Filter(
+                            Antraege,
+                            AntragstellerEmail = User().Email,
+                            ddStatusFilter_M.Selected.Value = "Alle" || Status.Value = ddStatusFilter_M.Selected.Value
+                        ),
+                        ID,
+                        SortOrder.Descending
+                    )
+                  TemplateSize: =90
+                  Width: =620
+                  X: =(Parent.Width - 620) / 2
+                  Y: =170
+                Children:
+                  - lblNrFeld_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Nr."
+                        Width: =60
+                        X: =10
+                        Y: =5
+                  - lblNrWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        FontWeight: =FontWeight.Semibold
+                        Height: =20
+                        Text: |-
+                          ="#" & ThisItem.ID
+                        Width: =60
+                        X: =10
+                        Y: =25
+                  - lblErstelltFeld_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Erstellt"
+                        Width: =90
+                        X: =80
+                        Y: =5
+                  - lblErstelltWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =20
+                        Text: =Text(ThisItem.Created, "dd.mm.yyyy")
+                        Width: =90
+                        X: =80
+                        Y: =25
+                  - lblArtikelFeld_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Artikelnummer"
+                        Width: =140
+                        X: =180
+                        Y: =5
+                  - lblArtikelWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =20
+                        Text: =ThisItem.Artikelnummer
+                        Width: =140
+                        X: =180
+                        Y: =25
+                  - lblStueckFeld_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Stück"
+                        Width: =60
+                        X: =330
+                        Y: =5
+                  - lblStueckWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =20
+                        Text: =Text(ThisItem.Stueckzahl)
+                        Width: =60
+                        X: =330
+                        Y: =25
+                  - lblWertFeld_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =20
+                        Size: =10
+                        Text: ="Gesamtwert"
+                        Width: =100
+                        X: =400
+                        Y: =5
+                  - lblWertWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.DarkGray
+                        Height: =20
+                        Text: =Text(ThisItem.Wert, "#,##0.00", "de-DE") & " €"
+                        Width: =100
+                        X: =400
+                        Y: =25
+                  - lblStatusWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Align: =Align.Center
+                        Color: =AppTheme.White
+                        Fill: |-
+                          =Switch(
+                              ThisItem.Status.Value,
+                              "Abgeschlossen", AppTheme.Green,
+                              "Abgelehnt", AppTheme.LightRed,
+                              "Bei MaWi", AppTheme.LightBlue,
+                              AppTheme.Orange
+                          )
+                        Height: =22
+                        Size: =10
+                        Text: =ThisItem.Status.Value
+                        Width: =160
+                        X: =10
+                        Y: =55
+                  - lblFachbereichWert_M:
+                      Control: Label@2.5.1
+                      Properties:
+                        Color: =AppTheme.MidGray
+                        Height: =22
+                        Size: =10
+                        Text: =ThisItem.Fachbereich.Value & " · " & ThisItem.Werk.Value
+                        Width: =220
+                        X: =180
+                        Y: =55
+                  - btnOeffnen_M:
+                      Control: ModernButton@1.0.0
+                      Properties:
+                        BasePaletteColor: =AppTheme.LightBlue
+                        Height: =30
+                        OnSelect: |-
+                          =Set(varAntrag, ThisItem);
+                          Navigate(scrDetail, ScreenTransition.Fade)
+                        Text: ="Öffnen"
+                        Width: =90
+                        X: =510
+                        Y: =30
+            - btnNavAntrag_M:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.LightBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrAntrag, ScreenTransition.Fade)
+                  Text: ="Neuer Antrag"
+                  Width: =250
+                  X: =10
+                  Y: =30
+            - btnNavMeine_M:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.DarkBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrMeineAntraege, ScreenTransition.Fade)
+                  Text: ="Meine Anträge"
+                  Width: =250
+                  X: =10
+                  Y: =70
+            - btnNavFreigaben_M:
+                Control: ModernButton@1.0.0
+                Properties:
+                  BasePaletteColor: =AppTheme.LightBlue
+                  Height: =35
+                  OnSelect: =Navigate(scrFreigaben, ScreenTransition.Fade)
+                  Text: ="Freigaben"
+                  Width: =250
+                  X: =10
+                  Y: =110

@@ -1,0 +1,66 @@
+// ============================================================
+// App > Formulas   (kompletten Inhalt in App.Formulas einfügen)
+// ============================================================
+
+// ---------- Farben (gleiche Namen wie im Maschinendaten-Projekt) ----------
+AppTheme = {
+    DarkBlue:  RGBA(22, 94, 131, 1),
+    LightBlue: RGBA(46, 125, 168, 1),
+    LightRed:  RGBA(196, 43, 28, 1),
+    Green:     RGBA(16, 124, 16, 1),
+    Orange:    RGBA(202, 80, 16, 1),
+    White:     RGBA(255, 255, 255, 1),
+    NearWhite: RGBA(248, 249, 250, 1),
+    OffWhite:  RGBA(241, 243, 245, 1),
+    PaleGray:  RGBA(222, 226, 230, 1),
+    MidGray:   RGBA(108, 117, 125, 1),
+    DarkGray:  RGBA(33, 37, 41, 1)
+};
+
+// ---------- Prozess ----------
+// Gesamtwert > nfWertgrenze  -> Freigabe durch Geschäftsführung
+// Gesamtwert <= nfWertgrenze -> nach FK direkt an MaWi
+nfWertgrenze = 5000;
+
+// Web-Link der App (Details > Web-Link). Wird für den Link in den Mails genutzt.
+nfAppLink = "https://apps.powerapps.com/play/HIER-APP-ID-EINTRAGEN";
+nfLinkPrefix = nfAppLink & If(IsBlank(Find("?", nfAppLink)), "?", "&") & "antragId=";
+
+// ---------- Rollen aus Liste "Empfaenger" ----------
+nfIstGF = !IsBlank(LookUp(Empfaenger, Rolle.Value = "GF" && Email = User().Email));
+nfMaWiWerke = Filter(Empfaenger, Rolle.Value = "MaWi" && Email = User().Email);
+
+// ---------- Rechte für den aktuell geöffneten Antrag (varAntrag) ----------
+nfDarfFK = varAntrag.Status.Value = "Wartet auf FK" && Lower(varAntrag.FKEmail) = Lower(User().Email);
+nfDarfGF = varAntrag.Status.Value = "Wartet auf GF" && nfIstGF;
+nfDarfMaWi = varAntrag.Status.Value = "Bei MaWi" && !IsBlank(LookUp(nfMaWiWerke, Werk.Value = varAntrag.Werk.Value));
+
+// ---------- Mail-Empfänger ----------
+nfMailGF = Concat(Filter(Empfaenger, Rolle.Value = "GF"), Email, ";");
+nfMailMaWi = Concat(Filter(Empfaenger, Rolle.Value = "MaWi" && Werk.Value = varAntrag.Werk.Value), Email, ";");
+// Info an Fachbereiche Q und Beschaffung (Weg > 5.000 €, nach GF-Freigabe)
+nfMailInfo = Concat(Filter(Empfaenger, Rolle.Value = "Q" || Rolle.Value = "Beschaffung"), Email, ";");
+// Info an Q, Beschaffung und GF (Weg <= 5.000 €, GF wird nur informiert)
+nfMailInfoMitGF = Concat(Filter(Empfaenger, Rolle.Value = "Q" || Rolle.Value = "Beschaffung" || Rolle.Value = "GF"), Email, ";");
+
+// ---------- Mail-Baustein mit allen Antragsdaten ----------
+nfMailDetails =
+    "<table cellpadding='4' style='font-family:Segoe UI,Arial;font-size:13px;border-collapse:collapse'>" &
+    "<tr><td><b>Antrag</b></td><td>#" & varAntrag.ID & "</td></tr>" &
+    "<tr><td><b>Antragsteller</b></td><td>" & varAntrag.AntragstellerName & "</td></tr>" &
+    "<tr><td><b>Fachbereich</b></td><td>" & varAntrag.Fachbereich.Value & "</td></tr>" &
+    "<tr><td><b>Werk</b></td><td>" & varAntrag.Werk.Value & "</td></tr>" &
+    "<tr><td><b>Artikelnummer</b></td><td>" & varAntrag.Artikelnummer & "</td></tr>" &
+    "<tr><td><b>Stückzahl</b></td><td>" & varAntrag.Stueckzahl & "</td></tr>" &
+    "<tr><td><b>Gesamtwert</b></td><td>" & Text(varAntrag.Wert, "#,##0.00", "de-DE") & " €</td></tr>" &
+    "<tr><td><b>Kostenstelle</b></td><td>" & varAntrag.Kostenstelle & "</td></tr>" &
+    "<tr><td><b>Wo liegt die Ware</b></td><td>" & varAntrag.Lagerort & "</td></tr>" &
+    "<tr><td><b>Status</b></td><td>" & varAntrag.Status.Value & "</td></tr>" &
+    "</table>" &
+    "<p><a href='" & nfLinkPrefix & varAntrag.ID & "'>Antrag in der App öffnen</a></p>";
+
+
+// ============================================================
+// App > StartScreen   (Eigenschaft StartScreen des App-Objekts)
+// ============================================================
+// If(!IsBlank(Param("antragId")), scrDetail, scrAntrag)
