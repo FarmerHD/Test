@@ -168,7 +168,7 @@ Screens:
                   - lblWegHinweis:
                       Control: Label@2.5.1
                       Properties:
-                        Color: =If(IfError(Value(txtWert.Text), 0) > nfWertgrenze, AppTheme.Orange, AppTheme.MidGray)
+                        Color: =If(IfError(Value(txtWert.Text), 0) > nfWertgrenze, AppTheme.DarkYellow, AppTheme.MidGray)
                         Height: =35
                         Size: =10
                         Text: |-

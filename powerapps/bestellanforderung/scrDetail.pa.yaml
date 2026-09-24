@@ -108,10 +108,10 @@ Screens:
                         Fill: |-
                           =Switch(
                               varAntrag.Status.Value,
-                              "Abgeschlossen", AppTheme.Green,
+                              "Abgeschlossen", AppTheme.DarkGreen,
                               "Abgelehnt", AppTheme.LightRed,
                               "Bei MaWi", AppTheme.LightBlue,
-                              AppTheme.Orange
+                              AppTheme.DarkYellow
                           )
                         Height: =26
                         Size: =10
@@ -246,7 +246,7 @@ Screens:
                   - lblD_WertWert:
                       Control: Label@2.5.1
                       Properties:
-                        Color: =If(varAntrag.Wert > nfWertgrenze, AppTheme.Orange, AppTheme.DarkGray)
+                        Color: =If(varAntrag.Wert > nfWertgrenze, AppTheme.DarkYellow, AppTheme.DarkGray)
                         FontWeight: =FontWeight.Semibold
                         Height: =22
                         Text: =Text(varAntrag.Wert, "#,##0.00", "de-DE") & " €"
@@ -530,7 +530,7 @@ Screens:
                   - btnGenehmigen:
                       Control: ModernButton@1.0.0
                       Properties:
-                        BasePaletteColor: =AppTheme.Green
+                        BasePaletteColor: =AppTheme.DarkGreen
                         Height: =35
                         OnSelect: |-
                           =If(
@@ -726,7 +726,7 @@ Screens:
                   - btnErledigt:
                       Control: ModernButton@1.0.0
                       Properties:
-                        BasePaletteColor: =AppTheme.Green
+                        BasePaletteColor: =AppTheme.DarkGreen
                         Height: =35
                         OnSelect: |-
                           =Set(
@@ -1005,8 +1005,8 @@ Screens:
                                 =Switch(
                                     ThisItem.RückfrageTyp.Value,
                                     "Ablehnung", AppTheme.LightRed,
-                                    "Freigabe", AppTheme.Green,
-                                    "Erledigt", AppTheme.Green,
+                                    "Freigabe", AppTheme.DarkGreen,
+                                    "Erledigt", AppTheme.DarkGreen,
                                     AppTheme.DarkGray
                                 )
                               Fill: =AppTheme.White

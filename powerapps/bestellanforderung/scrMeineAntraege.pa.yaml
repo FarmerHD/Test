@@ -231,10 +231,10 @@ Screens:
                         Fill: |-
                           =Switch(
                               ThisItem.Status.Value,
-                              "Abgeschlossen", AppTheme.Green,
+                              "Abgeschlossen", AppTheme.DarkGreen,
                               "Abgelehnt", AppTheme.LightRed,
                               "Bei MaWi", AppTheme.LightBlue,
-                              AppTheme.Orange
+                              AppTheme.DarkYellow
                           )
                         Height: =22
                         Size: =10

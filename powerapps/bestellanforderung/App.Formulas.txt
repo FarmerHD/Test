@@ -1,43 +1,42 @@
-// ============================================================
-// App > Formulas   (kompletten Inhalt in App.Formulas einfügen)
-// Wichtig: Named Formulas dürfen keine Variablen (Set) und keine
-// Steuerelemente referenzieren, sonst schlägt die ganze Eigenschaft
-// fehl und AppTheme ist nicht definiert (App bleibt leer/farblos).
-// ============================================================
-
 AppTheme = {
-    DarkBlue:  RGBA(22, 94, 131, 1),
-    LightBlue: RGBA(46, 125, 168, 1),
-    LightRed:  RGBA(196, 43, 28, 1),
-    Green:     RGBA(16, 124, 16, 1),
-    Orange:    RGBA(202, 80, 16, 1),
-    White:     RGBA(255, 255, 255, 1),
-    NearWhite: RGBA(248, 249, 250, 1),
-    OffWhite:  RGBA(241, 243, 245, 1),
-    PaleGray:  RGBA(222, 226, 230, 1),
-    MidGray:   RGBA(108, 117, 125, 1),
-    DarkGray:  RGBA(33, 37, 41, 1)
-};
+    // Core Brand Identity (60/30/10 Rule)
+    DarkBlue: ColorValue("#00508E");         // 60% - Main brand color
+    LightBlue: ColorValue("#75C0EC");        // 30% - Supporting brand color
+    CyanBlue: ColorValue("#10B0DB");         // 10% - Accent brand color
 
-// Gesamtwert > nfWertgrenze  -> Freigabe durch Geschäftsführung
-// Gesamtwert <= nfWertgrenze -> nach FK direkt an MaWi
-nfWertgrenze = 5000;
+    // Semantic Colors
+    DarkGreen: ColorValue("#0c662a");        // Success states
+    DarkYellow: ColorValue("#755b0d");       // Warning states
+    LightRed: ColorValue("#dc9999");         // Error states
+    DeepBlue: ColorValue("#0f2c66");         // Info states
 
-// Web-Link der App (Details > Web-Link). Wird für den Link in den Mails genutzt.
-nfAppLink = "https://apps.powerapps.com/play/HIER-APP-ID-EINTRAGEN";
-nfLinkPrefix = nfAppLink & If(IsBlank(Find("?", nfAppLink)), "?", "&") & "antragId=";
+    // Foundation Colors
+    White: ColorValue("#ffffff");
+    Black: ColorValue("#000000");
 
-// Rollen aus Liste "Empfaenger"
-nfIstGF = !IsBlank(LookUp(Empfaenger, Rolle.Value = "GF" && Email = User().Email));
-nfMaWiWerke = Filter(Empfaenger, Rolle.Value = "MaWi" && Email = User().Email);
+    // Text & Content Hierarchy
+    DarkGray: ColorValue("#1f2937");         // Main text
+    MidGray: ColorValue("#6b7280");          // Supporting text
+    LightGray: ColorValue("#9ca3af");        // Subtle text
+
+    // UI Elements
+    PaleGray: ColorValue("#e5e7eb");         // Default borders
+    OffWhite: ColorValue("#f3f4f6");         // Subtle borders
+    NearWhite: ColorValue("#f9fafb")         // Muted backgrounds
+};;
+
+// Wert > 5000 -> Freigabe Geschäftsführung
+nfWertgrenze = 5000;;
+
+// Web-Link der App (Details > Web-Link)
+nfAppLink = "https://apps.powerapps.com/play/HIER-APP-ID-EINTRAGEN";;
+nfLinkPrefix = nfAppLink & If(IsBlank(Find("?"; nfAppLink)); "?"; "&") & "antragId=";;
+
+// Rollen aus Liste Empfaenger
+nfIstGF = !IsBlank(LookUp(Empfaenger; Rolle.Value = "GF" && Email = User().Email));;
+nfMaWiWerke = Filter(Empfaenger; Rolle.Value = "MaWi" && Email = User().Email);;
 
 // Mail-Verteiler
-nfMailGF = Concat(Filter(Empfaenger, Rolle.Value = "GF"), Email, ";");
-nfMailInfo = Concat(Filter(Empfaenger, Rolle.Value = "Q" || Rolle.Value = "Beschaffung"), Email, ";");
-nfMailInfoMitGF = Concat(Filter(Empfaenger, Rolle.Value = "Q" || Rolle.Value = "Beschaffung" || Rolle.Value = "GF"), Email, ";");
-
-
-// ============================================================
-// App > StartScreen
-// ============================================================
-// If(!IsBlank(Param("antragId")), scrDetail, scrAntrag)
+nfMailGF = Concat(Filter(Empfaenger; Rolle.Value = "GF"); Email; ";");;
+nfMailInfo = Concat(Filter(Empfaenger; Rolle.Value = "Q" || Rolle.Value = "Beschaffung"); Email; ";");;
+nfMailInfoMitGF = Concat(Filter(Empfaenger; Rolle.Value = "Q" || Rolle.Value = "Beschaffung" || Rolle.Value = "GF"); Email; ";")

@@ -116,10 +116,13 @@ Die Führungskraft steht nicht in dieser Liste: sie kommt pro Antrag aus Microso
 2. **Daten** hinzufügen: SharePoint `Antraege`, `Kommentare`, `Empfaenger`,
    **Office 365 Outlook**, **Office 365 Users**.
 3. **Einstellungen > Updates**: „Modern controls and themes“ aktivieren.
-4. **App > Formulas**: Inhalt aus `App.Formulas.txt` einfügen.
+4. **App > Formulas**: kompletten Inhalt aus `App.Formulas.txt` einfügen.
+   Die Datei ist in deutscher Formel-Syntax (`;` zwischen Argumenten, `;;` zwischen
+   Formeln), passend zu deutschem Power Apps Studio. Die `.pa.yaml`-Dateien bleiben
+   in englischer Syntax – das ist beim Einfügen von YAML immer so.
    Web-Link der App später in `nfAppLink` eintragen (Details > Web-Link), damit der
    Link in den Mails direkt den Antrag öffnet.
-5. **App > StartScreen**: `If(!IsBlank(Param("antragId")), scrDetail, scrAntrag)`
+5. **App > StartScreen**: `If(!IsBlank(Param("antragId")); scrDetail; scrAntrag)`
 6. Screens einfügen: Inhalt einer `.pa.yaml`-Datei kopieren, in der Strukturansicht
    Rechtsklick > **Einfügen**. Reihenfolge: `scrAntrag`, `scrMeineAntraege`,
    `scrFreigaben`, `scrDetail`. Fehler wegen noch fehlender Screens verschwinden,
@@ -175,5 +178,4 @@ deshalb im `OnVisible` von `scrDetail` als Variable gesetzt (`varDarfFK`, `varDa
   MaWi-Zeile in `Empfaenger` anlegen. Keine Formeländerung nötig.
 - **Fachbereiche**: Auswahlwerte der Spalte `Antraege.Fachbereich` pflegen – das
   Dropdown liest sie über `Choices(Antraege.Fachbereich)`.
-- **Farben**: `AppTheme` in App.Formulas. Existiert `AppTheme` schon aus dem anderen
-  Projekt, die Zeilen `Green` und `Orange` ergänzen.
+- **Farben**: `AppTheme` in App.Formulas, identisch mit den anderen Apps.

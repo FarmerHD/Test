@@ -190,7 +190,7 @@ Screens:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Right
-                        Color: =If(ThisItem.Wert > nfWertgrenze, AppTheme.Orange, AppTheme.DarkGray)
+                        Color: =If(ThisItem.Wert > nfWertgrenze, AppTheme.DarkYellow, AppTheme.DarkGray)
                         FontWeight: =FontWeight.Semibold
                         Height: =20
                         Text: =Text(ThisItem.Wert, "#,##0.00", "de-DE") & " €"
@@ -202,7 +202,7 @@ Screens:
                       Properties:
                         Align: =Align.Center
                         Color: =AppTheme.White
-                        Fill: =If(ThisItem.Status.Value = "Bei MaWi", AppTheme.LightBlue, AppTheme.Orange)
+                        Fill: =If(ThisItem.Status.Value = "Bei MaWi", AppTheme.LightBlue, AppTheme.DarkYellow)
                         Height: =22
                         Size: =10
                         Text: |-
