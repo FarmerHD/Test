@@ -60,9 +60,9 @@ Der Vorgesetzte (FK) steht nicht in dieser Liste, er kommt aus dem Entra ID.
 3. Datenquellen hinzufügen: `Antraege`, `Kommentare`, `Rollen`, `Office365-Benutzer`.
    Ohne diese Datenquellen bricht das Einfügen bei der ersten Galerie ab.
 4. Halb eingefügte Screens löschen.
-5. `AlleScreens.pa.yaml` komplett kopieren und in der Strukturansicht einfügen.
-   Die Datei enthält alle vier Screens auf einmal, damit sich die Screens gegenseitig kennen
-   (Navigation). Die Einzeldateien sind derselbe Inhalt, getrennt.
+5. Screens einzeln einfügen, je Datei den kompletten Inhalt kopieren:
+   `scrAntrag`, `scrMeineAntraege`, `scrFreigaben`, `scrDetail`.
+   Rote Formeln wegen noch fehlender Screens (Navigate) verschwinden, sobald alle vier da sind.
 6. Datei-Upload:
    - Auf `scrAntrag` in `Card_Antrag` ein Formular einfügen: Name `frmAnhaenge`,
      DataSource `Antraege`, DefaultMode `FormMode.New`, Felder: nur Anlagen,
