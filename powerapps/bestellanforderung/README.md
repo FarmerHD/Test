@@ -53,14 +53,25 @@ Die Kommentarliste ist damit gleichzeitig der Verlauf.
 
 Der Vorgesetzte (FK) steht nicht in dieser Liste, er kommt aus dem Entra ID.
 
-## Einrichtung
+## Einrichtung (Reihenfolge einhalten)
 
-1. Datenquellen: `Antraege`, `Kommentare`, `Rollen`, `Office365-Benutzer`.
-2. Screens einfügen: `scrAntrag`, `scrMeineAntraege`, `scrFreigaben`, `scrDetail`.
-3. Datei-Upload: auf `scrAntrag` in `Card_Antrag` ein Formular einfügen
+1. **Modern Controls aktivieren**: Einstellungen > Updates > Neu > „Moderne Steuerelemente
+   und Designs“ einschalten. Ohne diese Einstellung bricht das Einfügen beim ersten
+   modernen Steuerelement ab (Dropdown, Button, Texteingabe) – übrig bleiben nur Header,
+   Container und Labels.
+2. SharePoint-Listen `Antraege`, `Kommentare`, `Rollen` anlegen.
+3. Datenquellen hinzufügen: `Antraege`, `Kommentare`, `Rollen`, `Office365-Benutzer`.
+4. Halb eingefügte Screens löschen.
+5. Screens einfügen, jeweils kompletten Dateiinhalt kopieren und in der Strukturansicht
+   einfügen: `scrAntrag`, `scrMeineAntraege`, `scrFreigaben`, `scrDetail`.
+   Rote Formeln wegen noch fehlender Screens verschwinden, sobald alle vier da sind.
+6. Datei-Upload: auf `scrAntrag` in `Card_Antrag` ein Formular einfügen
    - Name `frmAnhaenge`, DataSource `Antraege`, DefaultMode `FormMode.New`
    - Felder: nur Anlagen
    - X `164`, Y `358`, Width `420`, Height `180`
+
+Kontrolle nach dem Einfügen von `scrAntrag`: In `Card_Antrag` müssen 19 Elemente stehen,
+in `Container_Content_A` zusätzlich drei Nav-Buttons.
 
 ## Wo die Child Flows aufgerufen werden
 
