@@ -5,17 +5,14 @@ Screens:
       LoadingSpinnerColor: =AppTheme.DarkBlue
       OnVisible: |
         =Set(varAktuelleSeite, "Freigaben");
-        // 1) FK: alle Anträge, bei denen ich als Führungskraft eingetragen bin
         ClearCollect(
             colAufgaben,
             Filter(Antraege, Status.Value = "Wartet auf FK", FKEmail = User().Email)
         );
-        // 2) GF: alle Anträge > 5.000 € nach FK-Freigabe
         If(
             nfIstGF,
             Collect(colAufgaben, Filter(Antraege, Status.Value = "Wartet auf GF"))
         );
-        // 3) MaWi: alle freigegebenen Anträge meiner Werke
         ForAll(
             nfMaWiWerke As w,
             Collect(colAufgaben, Filter(Antraege, Status.Value = "Bei MaWi", Werk.Value = w.Werk.Value))
@@ -225,7 +222,7 @@ Screens:
                         Color: =AppTheme.MidGray
                         Height: =22
                         Size: =10
-                        Text: ="Eingereicht am " & Text(ThisItem.Created, "dd.mm.yyyy")
+                        Text: ="Eingereicht am " & Text(ThisItem.Erstellt, "dd.mm.yyyy")
                         Width: =200
                         X: =180
                         Y: =58

@@ -221,7 +221,7 @@ Screens:
                       Properties:
                         Color: =AppTheme.DarkGray
                         Height: =35
-                        Text: ="Bemerkung"
+                        Text: ="Kommentar"
                         Width: =130
                         X: =24
                         Y: =370
@@ -230,7 +230,8 @@ Screens:
                       Properties:
                         Fill: =AppTheme.OffWhite
                         Height: =60
-                        Placeholder: ="Optional"
+                        Placeholder: ="Optional – wird in der Kommentarliste gespeichert"
+                        Type: =TextInputType.Multiline
                         Width: =420
                         X: =164
                         Y: =370
@@ -346,7 +347,6 @@ Screens:
                                           Wert: Value(txtWert.Text),
                                           Kostenstelle: Trim(txtKostenstelle.Text),
                                           Lagerort: Trim(txtLagerort.Text),
-                                          Bemerkung: txtBemerkung.Text,
                                           Status: {Value: "Wartet auf FK"},
                                           AntragstellerName: User().FullName,
                                           AntragstellerEmail: User().Email,
@@ -365,12 +365,51 @@ Screens:
                               IsBlank(varAntrag.ID),
                               Notify("Antrag konnte nicht gespeichert werden.", NotificationType.Error),
 
+                              Set(
+                                  varMailDetails,
+                                  "<table cellpadding='4' style='font-family:Segoe UI,Arial;font-size:13px'>" &
+                                  "<tr><td><b>Antrag</b></td><td>#" & varAntrag.ID & "</td></tr>" &
+                                  "<tr><td><b>Antragsteller</b></td><td>" & varAntrag.AntragstellerName & "</td></tr>" &
+                                  "<tr><td><b>Fachbereich</b></td><td>" & varAntrag.Fachbereich.Value & "</td></tr>" &
+                                  "<tr><td><b>Werk</b></td><td>" & varAntrag.Werk.Value & "</td></tr>" &
+                                  "<tr><td><b>Artikelnummer</b></td><td>" & varAntrag.Artikelnummer & "</td></tr>" &
+                                  "<tr><td><b>Stückzahl</b></td><td>" & varAntrag.Stueckzahl & "</td></tr>" &
+                                  "<tr><td><b>Gesamtwert</b></td><td>" & Text(varAntrag.Wert, "#,##0.00", "de-DE") & " €</td></tr>" &
+                                  "<tr><td><b>Kostenstelle</b></td><td>" & varAntrag.Kostenstelle & "</td></tr>" &
+                                  "<tr><td><b>Wo liegt die Ware</b></td><td>" & varAntrag.Lagerort & "</td></tr>" &
+                                  "</table>" &
+                                  "<p><a href='" & nfLinkPrefix & varAntrag.ID & "'>Antrag in der App öffnen</a></p>"
+                              );
+                              If(
+                                  !IsBlank(Trim(txtBemerkung.Text)),
+                                  Patch(
+                                      Kommentare,
+                                      Defaults(Kommentare),
+                                      {
+                                          RückfrageTyp: {Value: "Info"},
+                                          RückfrageText: txtBemerkung.Text,
+                                          Person: {
+                                              Claims: "i:0#.f|membership|" & User().Email,
+                                              Department: "",
+                                              DisplayName: User().FullName,
+                                              Email: User().Email,
+                                              JobTitle: "",
+                                              Picture: ""
+                                          },
+                                          AnforderungsID: {
+                                              Id: varAntrag.ID,
+                                              Value: varAntrag.Titel
+                                          }
+                                      }
+                                  )
+                              );
                               Office365Outlook.SendEmailV2(
                                   varAntrag.FKEmail,
                                   "Freigabe erforderlich: Bestellanforderung #" & varAntrag.ID,
                                   "<p>Hallo " & varAntrag.FKName & ",</p>" &
                                   "<p>" & User().FullName & " hat eine Bestellanforderung eingereicht. Bitte prüfen und freigeben.</p>" &
-                                  nfMailDetails
+                                  If(IsBlank(Trim(txtBemerkung.Text)), "", "<p><b>Kommentar:</b> " & txtBemerkung.Text & "</p>") &
+                                  varMailDetails
                               );
                               Notify("Antrag #" & varAntrag.ID & " eingereicht.", NotificationType.Success);
                               ResetForm(frmAnhaenge);

@@ -162,7 +162,7 @@ Screens:
                       Properties:
                         Color: =AppTheme.DarkGray
                         Height: =20
-                        Text: =Text(ThisItem.Created, "dd.mm.yyyy")
+                        Text: =Text(ThisItem.Erstellt, "dd.mm.yyyy")
                         Width: =90
                         X: =80
                         Y: =25

@@ -49,23 +49,41 @@ Anlagen sind bei SharePoint-Listen standardmäßig aktiv – aktiviert lassen.
 | Wert                | Währung (€)               | ja      | Gesamtwert der Anforderung                        |
 | Kostenstelle        | Text                      | nein    |                                                   |
 | Lagerort            | Text                      | nein    | „Wo liegt die Ware“                               |
-| Bemerkung           | Mehrere Textzeilen        | nein    | Nur-Text                                          |
 | Status              | Auswahl                   | ja      | `Wartet auf FK`, `Wartet auf GF`, `Bei MaWi`, `Abgeschlossen`, `Abgelehnt` |
 | AntragstellerName   | Text                      | nein    |                                                   |
 | AntragstellerEmail  | Text                      | nein    |                                                   |
 | FKName              | Text                      | nein    |                                                   |
 | FKEmail             | Text                      | nein    |                                                   |
-| FKKommentar         | Mehrere Textzeilen        | nein    |                                                   |
 | FKDatum             | Datum und Uhrzeit         | nein    |                                                   |
 | GFName              | Text                      | nein    |                                                   |
-| GFKommentar         | Mehrere Textzeilen        | nein    |                                                   |
 | GFDatum             | Datum und Uhrzeit         | nein    |                                                   |
 | MaWiName            | Text                      | nein    |                                                   |
-| MaWiKommentar       | Mehrere Textzeilen        | nein    |                                                   |
 | MaWiDatum           | Datum und Uhrzeit         | nein    |                                                   |
 
 In SharePoint nur `Titel` als Pflicht markieren. Die Pflichtprüfung der übrigen Felder
 übernimmt die App (Button „Antrag absenden“ ist erst aktiv, wenn alles ausgefüllt ist).
+
+### Liste `Kommentare`
+
+Alle Kommentare liegen in einer eigenen Liste – gleicher Aufbau wie
+`KommentareRueckfragen` in der Material- & Dienstleisteranforderung.
+
+| Spalte         | Typ                              | Werte / Hinweis                                     |
+|----------------|----------------------------------|-----------------------------------------------------|
+| Titel          | Text (Standard)                  | in SharePoint auf „nicht erforderlich“ stellen      |
+| AnforderungsID | Nachschlagen → `Antraege`, Titel | Bezug zum Antrag                                    |
+| RückfrageTyp   | Auswahl                          | `Info`, `Freigabe`, `Ablehnung`, `Erledigt`         |
+| RückfrageText  | Mehrere Textzeilen (Nur-Text)    |                                                     |
+| Person         | Person oder Gruppe               |                                                     |
+
+Woher Einträge kommen:
+
+- **Info**: Feld „Kommentar“ beim Absenden und `+` im Kommentarbereich des Detail-Screens.
+  Eigene Info-Kommentare sind bearbeitbar/löschbar, bis der Antrag abgeschlossen oder abgelehnt ist.
+- **Freigabe / Ablehnung**: Kommentar von FK oder GF bei der Entscheidung (Ablehnung nur mit Text).
+- **Erledigt**: Kommentar der MaWi beim Abschließen.
+
+Entscheidungs-Kommentare sind nicht bearbeitbar.
 
 ### Liste `Empfaenger`
 
@@ -95,7 +113,7 @@ Die Führungskraft steht nicht in dieser Liste: sie kommt pro Antrag aus Microso
 ## 2. App einrichten
 
 1. Neue Canvas-App (Tablet-Format) anlegen.
-2. **Daten** hinzufügen: SharePoint `Antraege`, SharePoint `Empfaenger`,
+2. **Daten** hinzufügen: SharePoint `Antraege`, `Kommentare`, `Empfaenger`,
    **Office 365 Outlook**, **Office 365 Users**.
 3. **Einstellungen > Updates**: „Modern controls and themes“ aktivieren.
 4. **App > Formulas**: Inhalt aus `App.Formulas.txt` einfügen.
@@ -124,6 +142,22 @@ Beim Absenden übernimmt `Patch(..., frmAnhaenge.Updates, {...})` die Dateien mi
 Im Detail-Screen werden die Dateien über `varAntrag.Attachments` angezeigt und per
 Button geöffnet.
 
+### App bleibt leer (nur Header sichtbar)
+
+Fast immer ein Fehler in **App > Formulas**. Dann fehlt `AppTheme`, alle Farben werden
+leer/transparent und Texte und Karten sind unsichtbar.
+
+1. App-Objekt in der Strukturansicht wählen, Eigenschaft `Formulas` öffnen.
+2. Rote Unterstreichung suchen. Häufige Ursachen:
+   - Liste `Empfaenger` noch nicht als Datenquelle verbunden.
+   - Spaltenname abweichend (z. B. `Rolle`, `Email`, `Werk`).
+   - In Named Formulas Variablen oder Steuerelemente verwendet – das ist nicht erlaubt.
+3. Sobald `Formulas` fehlerfrei ist, erscheint der Inhalt.
+
+Alles, was vom geöffneten Antrag abhängt (Rechte, MaWi-Empfänger, Mail-Text), wird
+deshalb im `OnVisible` von `scrDetail` als Variable gesetzt (`varDarfFK`, `varDarfGF`,
+`varDarfMaWi`, `varMailMaWi`, `varMailDetails`).
+
 ## 3. Test
 
 1. Eigenen Benutzer in `Empfaenger` als `GF` und als `MaWi` für `Werk 5` eintragen.
@@ -132,6 +166,7 @@ Button geöffnet.
 4. Als MaWi „Als erledigt markieren“ → Status `Abgeschlossen`, Mail an Antragsteller.
 5. Das Gleiche mit 6.000 € → nach FK-Freigabe zuerst `Wartet auf GF`.
 6. Ablehnen ohne Kommentar ist gesperrt; mit Kommentar geht Mail an Antragsteller.
+7. Im Detail-Screen über `+` einen Kommentar anlegen, bearbeiten, löschen.
 
 ## Anpassen
 
