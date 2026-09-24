@@ -76,7 +76,7 @@ Screens:
                         Fill: =AppTheme.OffWhite
                         Height: =35
                         ItemDisplayText: =ThisItem.Value
-                        Items: =Choices(Antraege.Fachbereich)
+                        Items: =["Produktion", "Qualität", "Beschaffung", "Instandhaltung", "Logistik", "Verwaltung"]
                         Width: =420
                         X: =164
                         Y: =64
@@ -233,7 +233,6 @@ Screens:
                               Patch(
                                   Antraege,
                                   Defaults(Antraege),
-                                  frmAnhaenge.Updates,
                                   {
                                       Titel: Trim(txtArtikelnummer.Text),
                                       Fachbereich: {Value: ddFachbereich.Selected.Value},
@@ -263,7 +262,6 @@ Screens:
                               )
                           );
                           Notify("Antrag eingereicht.", NotificationType.Success);
-                          ResetForm(frmAnhaenge);
                           Reset(ddFachbereich);
                           Reset(txtArtikelnummer);
                           Reset(txtStueckzahl);
@@ -281,8 +279,7 @@ Screens:
                         BasePaletteColor: =AppTheme.MidGray
                         Height: =35
                         OnSelect: |-
-                          =ResetForm(frmAnhaenge);
-                          Reset(ddFachbereich);
+                          =Reset(ddFachbereich);
                           Reset(txtArtikelnummer);
                           Reset(txtStueckzahl);
                           Reset(txtWert);
