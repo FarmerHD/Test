@@ -4,42 +4,12 @@ Screens:
       Fill: =AppTheme.NearWhite
       LoadingSpinnerColor: =AppTheme.DarkBlue
       OnVisible: |
-        =Set(varAktuelleSeite, "Detail");
-        Set(
-            varAntrag,
-            LookUp(Antraege, ID = Coalesce(varAntrag.ID, Value(Param("antragId"))))
-        );
-        Set(
-            varDarfFK,
-            varAntrag.Status.Value = "Wartet auf FK" && Lower(varAntrag.FKEmail) = Lower(User().Email)
-        );
-        Set(
-            varDarfGF,
-            varAntrag.Status.Value = "Wartet auf GF" && nfIstGF
-        );
-        Set(
-            varDarfMaWi,
-            varAntrag.Status.Value = "Bei MaWi" && !IsBlank(LookUp(nfMaWiWerke, Werk.Value = varAntrag.Werk.Value))
-        );
-        Set(
-            varMailMaWi,
-            Concat(Filter(Empfaenger, Rolle.Value = "MaWi" && Werk.Value = varAntrag.Werk.Value), Email, ";")
-        );
-        Set(
-            varMailDetails,
-            "<table cellpadding='4' style='font-family:Segoe UI,Arial;font-size:13px'>" &
-            "<tr><td><b>Antrag</b></td><td>#" & varAntrag.ID & "</td></tr>" &
-            "<tr><td><b>Antragsteller</b></td><td>" & varAntrag.AntragstellerName & "</td></tr>" &
-            "<tr><td><b>Fachbereich</b></td><td>" & varAntrag.Fachbereich.Value & "</td></tr>" &
-            "<tr><td><b>Werk</b></td><td>" & varAntrag.Werk.Value & "</td></tr>" &
-            "<tr><td><b>Artikelnummer</b></td><td>" & varAntrag.Artikelnummer & "</td></tr>" &
-            "<tr><td><b>Stückzahl</b></td><td>" & varAntrag.Stueckzahl & "</td></tr>" &
-            "<tr><td><b>Gesamtwert</b></td><td>" & Text(varAntrag.Wert, "#,##0.00", "de-DE") & " €</td></tr>" &
-            "<tr><td><b>Kostenstelle</b></td><td>" & varAntrag.Kostenstelle & "</td></tr>" &
-            "<tr><td><b>Wo liegt die Ware</b></td><td>" & varAntrag.Lagerort & "</td></tr>" &
-            "</table>" &
-            "<p><a href='" & nfLinkPrefix & varAntrag.ID & "'>Antrag in der App öffnen</a></p>"
-        );
+        =Set(varAntrag, LookUp(Antraege, ID = varAntrag.ID));
+        Set(varIstGF, !IsBlank(LookUp(Rollen, Rolle.Value = "GF" && Person.Email = User().Email)));
+        Set(varIstMaWi, !IsBlank(LookUp(Rollen, Rolle.Value = "MaWi" && Person.Email = User().Email)));
+        Set(varDarfFK, varAntrag.Status.Value = "Wartet auf FK" && varAntrag.Vorgesetzter.Email = User().Email);
+        Set(varDarfGF, varAntrag.Status.Value = "Wartet auf GF" && varIstGF);
+        Set(varDarfMaWi, varAntrag.Status.Value = "Bei MaWi" && varIstMaWi);
         Set(varKommentarOffen, false);
         Set(varEditKommentarID, 0);
         Reset(txtEntscheidung)
@@ -63,7 +33,7 @@ Screens:
                   Align: =Align.Center
                   Color: =AppTheme.DarkGray
                   Size: =11
-                  Text: ="Antragsdetails"
+                  Text: ="Antrag"
                   Width: =Parent.Width
       - Container_Content_D:
           Control: GroupContainer@1.5.0
@@ -83,7 +53,7 @@ Screens:
                   BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =AppTheme.White
-                  Height: =320
+                  Height: =300
                   Width: =520
                   X: =Max(280, (Parent.Width - 1060) / 2)
                   Y: =20
@@ -95,8 +65,7 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =30
                         Size: =18
-                        Text: |-
-                          ="Bestellanforderung #" & varAntrag.ID
+                        Text: ="Antrag Nr. " & varAntrag.ID
                         Width: =320
                         X: =20
                         Y: =16
@@ -108,9 +77,8 @@ Screens:
                         Fill: |-
                           =Switch(
                               varAntrag.Status.Value,
-                              "Abgeschlossen", AppTheme.DarkGreen,
+                              "Erledigt", AppTheme.DarkGreen,
                               "Abgelehnt", AppTheme.LightRed,
-                              "Bei MaWi", AppTheme.LightBlue,
                               AppTheme.DarkYellow
                           )
                         Height: =26
@@ -119,288 +87,26 @@ Screens:
                         Width: =140
                         X: =360
                         Y: =18
-                  - lblD_AntragstellerFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Antragsteller"
-                        Width: =230
-                        X: =20
-                        Y: =64
-                  - lblD_AntragstellerWert:
+                  - lblDetailDaten:
                       Control: Label@2.5.1
                       Properties:
                         Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =varAntrag.AntragstellerName
-                        Width: =230
-                        X: =20
-                        Y: =84
-                  - lblD_ErstelltFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Eingereicht am"
-                        Width: =230
-                        X: =270
-                        Y: =64
-                  - lblD_ErstelltWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =Text(varAntrag.Erstellt, "dd.mm.yyyy hh:mm")
-                        Width: =230
-                        X: =270
-                        Y: =84
-                  - lblD_FachbereichFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Fachbereich"
-                        Width: =230
-                        X: =20
-                        Y: =114
-                  - lblD_FachbereichWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =varAntrag.Fachbereich.Value
-                        Width: =230
-                        X: =20
-                        Y: =134
-                  - lblD_WerkFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Werk"
-                        Width: =230
-                        X: =270
-                        Y: =114
-                  - lblD_WerkWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =varAntrag.Werk.Value
-                        Width: =230
-                        X: =270
-                        Y: =134
-                  - lblD_ArtikelFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Artikelnummer"
-                        Width: =230
-                        X: =20
-                        Y: =164
-                  - lblD_ArtikelWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =varAntrag.Artikelnummer
-                        Width: =230
-                        X: =20
-                        Y: =184
-                  - lblD_StueckFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Stückzahl"
-                        Width: =230
-                        X: =270
-                        Y: =164
-                  - lblD_StueckWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =Text(varAntrag.Stueckzahl)
-                        Width: =230
-                        X: =270
-                        Y: =184
-                  - lblD_WertFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Gesamtwert"
-                        Width: =230
-                        X: =20
-                        Y: =214
-                  - lblD_WertWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =If(varAntrag.Wert > nfWertgrenze, AppTheme.DarkYellow, AppTheme.DarkGray)
-                        FontWeight: =FontWeight.Semibold
-                        Height: =22
-                        Text: =Text(varAntrag.Wert, "#,##0.00", "de-DE") & " €"
-                        Width: =230
-                        X: =20
-                        Y: =234
-                  - lblD_KostenstelleFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Kostenstelle"
-                        Width: =230
-                        X: =270
-                        Y: =214
-                  - lblD_KostenstelleWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =Coalesce(varAntrag.Kostenstelle, "-")
-                        Width: =230
-                        X: =270
-                        Y: =234
-                  - lblD_LagerortFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Wo liegt die Ware"
-                        Width: =230
-                        X: =20
-                        Y: =264
-                  - lblD_LagerortWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =Coalesce(varAntrag.Lagerort, "-")
-                        Width: =230
-                        X: =20
-                        Y: =284
-                  - lblD_FKFeld:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="Führungskraft"
-                        Width: =230
-                        X: =270
-                        Y: =264
-                  - lblD_FKWert:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =22
-                        Text: =varAntrag.FKName
-                        Width: =230
-                        X: =270
-                        Y: =284
-            - Card_Verlauf:
-                Control: GroupContainer@1.5.0
-                Variant: ManualLayout
-                Properties:
-                  BorderColor: =AppTheme.PaleGray
-                  BorderThickness: =1
-                  DropShadow: =DropShadow.None
-                  Fill: =AppTheme.White
-                  Height: =180
-                  Width: =520
-                  X: =Max(280, (Parent.Width - 1060) / 2)
-                  Y: =355
-                Children:
-                  - lblVerlaufTitel:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =20
-                        Size: =10
-                        Text: ="VERLAUF"
-                        Width: =300
-                        X: =20
-                        Y: =12
-                  - lblV_Eingereicht:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =34
-                        Size: =11
+                        Height: =220
                         Text: |-
-                          ="1. Eingereicht: " & Text(varAntrag.Erstellt, "dd.mm.yyyy hh:mm") & " – " & varAntrag.AntragstellerName
+                          ="Antragsteller:  " & varAntrag.Antragsteller.DisplayName & Char(10) &
+                          "Vorgesetzter:  " & varAntrag.Vorgesetzter.DisplayName & Char(10) &
+                          "Fachbereich:  " & varAntrag.Fachbereich.Value & Char(10) &
+                          "Artikelnummer:  " & varAntrag.Artikelnummer & Char(10) &
+                          "Stückzahl:  " & varAntrag.Stueckzahl & Char(10) &
+                          "Wert:  " & Text(varAntrag.Wert, "#,##0.00") & " €" & Char(10) &
+                          "Kostenstelle:  " & varAntrag.Kostenstelle & Char(10) &
+                          "Wo liegt die Ware:  " & varAntrag.Lagerort & Char(10) &
+                          "Erstellt:  " & Text(varAntrag.Erstellt, "dd.mm.yyyy hh:mm")
                         VerticalAlign: =VerticalAlign.Top
                         Width: =480
                         X: =20
-                        Y: =38
-                  - lblV_FK:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =34
-                        Size: =11
-                        Text: |-
-                          ="2. Führungskraft: " &
-                          If(
-                              IsBlank(varAntrag.FKDatum),
-                              "offen (" & varAntrag.FKName & ")",
-                              If(varAntrag.Status.Value = "Abgelehnt" && IsBlank(varAntrag.GFDatum), "abgelehnt", "freigegeben") &
-                              " am " & Text(varAntrag.FKDatum, "dd.mm.yyyy hh:mm") & " – " & varAntrag.FKName
-                          )
-                        VerticalAlign: =VerticalAlign.Top
-                        Width: =480
-                        X: =20
-                        Y: =72
-                  - lblV_GF:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =34
-                        Size: =11
-                        Text: |-
-                          ="3. Geschäftsführung: " &
-                          If(
-                              varAntrag.Wert <= nfWertgrenze,
-                              "nur Info (Wert bis " & Text(nfWertgrenze, "#,##0", "de-DE") & " €)",
-                              IsBlank(varAntrag.GFDatum),
-                              "offen",
-                              If(varAntrag.Status.Value = "Abgelehnt", "abgelehnt", "freigegeben") &
-                              " am " & Text(varAntrag.GFDatum, "dd.mm.yyyy hh:mm") & " – " & varAntrag.GFName
-                          )
-                        VerticalAlign: =VerticalAlign.Top
-                        Width: =480
-                        X: =20
-                        Y: =106
-                  - lblV_MaWi:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkGray
-                        Height: =34
-                        Size: =11
-                        Text: |-
-                          ="4. MaWi " & varAntrag.Werk.Value & ": " &
-                          If(
-                              IsBlank(varAntrag.MaWiDatum),
-                              If(varAntrag.Status.Value = "Abgelehnt", "-", "offen"),
-                              "erledigt am " & Text(varAntrag.MaWiDatum, "dd.mm.yyyy hh:mm") & " – " & varAntrag.MaWiName
-                          )
-                        VerticalAlign: =VerticalAlign.Top
-                        Width: =480
-                        X: =20
-                        Y: =140
-            - Card_Anhaenge:
+                        Y: =60
+            - Card_Dateien:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
                 Properties:
@@ -411,9 +117,9 @@ Screens:
                   Height: =Max(120, Parent.Height - Self.Y - 10)
                   Width: =520
                   X: =Max(280, (Parent.Width - 1060) / 2)
-                  Y: =550
+                  Y: =335
                 Children:
-                  - lblAnhaengeTitel:
+                  - lblDateienTitel:
                       Control: Label@2.5.1
                       Properties:
                         Color: =AppTheme.MidGray
@@ -423,29 +129,18 @@ Screens:
                         Width: =300
                         X: =20
                         Y: =10
-                  - lblKeineAnhaenge:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =24
-                        Text: ="Keine Dateien angehängt."
-                        Visible: =CountRows(varAntrag.Attachments) = 0
-                        Width: =300
-                        X: =20
-                        Y: =36
-                  - galAnhaenge:
+                  - galDateien:
                       Control: Gallery@2.15.0
                       Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
                       Properties:
                         Height: =Parent.Height - Self.Y - 5
                         Items: =varAntrag.Attachments
                         TemplateSize: =36
-                        Visible: =CountRows(varAntrag.Attachments) > 0
                         Width: =490
                         X: =15
                         Y: =34
                       Children:
-                        - lblAnhangName:
+                        - lblDateiName:
                             Control: Label@2.5.1
                             Properties:
                               Color: =AppTheme.DarkGray
@@ -454,7 +149,7 @@ Screens:
                               Width: =360
                               X: =5
                               Y: =4
-                        - btnAnhangOeffnen:
+                        - btnDateiOeffnen:
                             Control: ModernButton@1.0.0
                             Properties:
                               BasePaletteColor: =AppTheme.LightBlue
@@ -472,7 +167,8 @@ Screens:
                   BorderThickness: =1
                   DropShadow: =DropShadow.None
                   Fill: =AppTheme.White
-                  Height: =230
+                  Height: =200
+                  Visible: =varDarfFK || varDarfGF || varDarfMaWi
                   Width: =520
                   X: =Max(280, (Parent.Width - 1060) / 2) + 540
                   Y: =20
@@ -484,175 +180,65 @@ Screens:
                         FontWeight: =FontWeight.Bold
                         Height: =28
                         Size: =14
-                        Text: |-
-                          =If(
-                              varDarfFK, "Freigabe als Führungskraft",
-                              varDarfGF, "Freigabe Geschäftsführung",
-                              varDarfMaWi, "Bearbeitung Materialwirtschaft",
-                              "Aktion"
-                          )
+                        Text: =If(varDarfFK, "Freigabe Vorgesetzter", varDarfGF, "Freigabe Geschäftsführung", "Bearbeitung MaWi")
                         Width: =480
                         X: =20
                         Y: =12
-                  - lblAktionHinweis:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =36
-                        Size: =10
-                        Text: |-
-                          =If(
-                              varDarfFK && varAntrag.Wert > nfWertgrenze,
-                              "Wert über " & Text(nfWertgrenze, "#,##0", "de-DE") & " € – nach Ihrer Freigabe entscheidet die Geschäftsführung.",
-                              varDarfFK,
-                              "Wert bis " & Text(nfWertgrenze, "#,##0", "de-DE") & " € – nach Ihrer Freigabe geht der Antrag direkt an die MaWi. Q, Beschaffung und GF werden informiert.",
-                              varDarfGF,
-                              "Nach Ihrer Freigabe geht der Antrag an die MaWi. Q und Beschaffung werden informiert.",
-                              varDarfMaWi,
-                              "Bestellung auslösen und hier als erledigt markieren. Der Antragsteller wird informiert.",
-                              "Für Sie ist bei diesem Antrag keine Aktion erforderlich."
-                          )
-                        VerticalAlign: =VerticalAlign.Top
-                        Width: =480
-                        X: =20
-                        Y: =42
                   - txtEntscheidung:
                       Control: ModernTextInput@1.1.2
                       Properties:
                         Fill: =AppTheme.OffWhite
                         Height: =60
-                        Placeholder: =If(varDarfMaWi, "Kommentar (z. B. Bestellnummer)", "Kommentar / Begründung (bei Ablehnung Pflicht)")
+                        Placeholder: ="Kommentar (bei Ablehnung Pflicht)"
                         Type: =TextInputType.Multiline
-                        Visible: =varDarfFK || varDarfGF || varDarfMaWi
                         Width: =480
                         X: =20
-                        Y: =84
-                  - btnGenehmigen:
+                        Y: =50
+                  - btnFreigeben:
                       Control: ModernButton@1.0.0
                       Properties:
                         BasePaletteColor: =AppTheme.DarkGreen
                         Height: =35
                         OnSelect: |-
-                          =If(
-                              varDarfFK,
-                              If(
-                                  varAntrag.Wert > nfWertgrenze,
-                                  Set(
-                                      varAntrag,
-                                      Patch(
-                                          Antraege,
-                                          varAntrag,
-                                          {
-                                              Status: {Value: "Wartet auf GF"},
-                                              FKName: User().FullName,
-                                              FKDatum: Now()
-                                          }
-                                      )
-                                  );
-                                  If(
-                                      !IsBlank(nfMailGF),
-                                      Office365Outlook.SendEmailV2(
-                                          nfMailGF,
-                                          "Freigabe erforderlich: Bestellanforderung #" & varAntrag.ID,
-                                          "<p>" & User().FullName & " hat als Führungskraft folgende Bestellanforderung freigegeben. " &
-                                          "Wegen des Werts über " & Text(nfWertgrenze, "#,##0", "de-DE") & " € ist Ihre Freigabe erforderlich.</p>" &
-                                          If(IsBlank(Trim(txtEntscheidung.Text)), "", "<p><b>Kommentar:</b> " & txtEntscheidung.Text & "</p>") &
-                                          varMailDetails
-                                      )
-                                  ),
-
-                                  Set(
-                                      varAntrag,
-                                      Patch(
-                                          Antraege,
-                                          varAntrag,
-                                          {
-                                              Status: {Value: "Bei MaWi"},
-                                              FKName: User().FullName,
-                                              FKDatum: Now()
-                                          }
-                                      )
-                                  );
-                                  If(
-                                      !IsBlank(varMailMaWi),
-                                      Office365Outlook.SendEmailV2(
-                                          varMailMaWi,
-                                          "Neue Bestellanforderung #" & varAntrag.ID & " (" & varAntrag.Werk.Value & ")",
-                                          "<p>Folgende Bestellanforderung ist freigegeben und kann bestellt werden.</p>" & varMailDetails
-                                      )
-                                  );
-                                  If(
-                                      !IsBlank(nfMailInfoMitGF),
-                                      Office365Outlook.SendEmailV2(
-                                          nfMailInfoMitGF,
-                                          "Info: Bestellanforderung #" & varAntrag.ID & " freigegeben",
-                                          "<p>Zur Information: Folgende Bestellanforderung wurde von " & User().FullName &
-                                          " freigegeben und an die MaWi übergeben.</p>" & varMailDetails
-                                      )
-                                  )
-                              ),
-
-                              varDarfGF,
-                              Set(
-                                  varAntrag,
-                                  Patch(
-                                      Antraege,
-                                      varAntrag,
-                                      {
-                                          Status: {Value: "Bei MaWi"},
-                                          GFName: User().FullName,
-                                          GFDatum: Now()
-                                      }
-                                  )
-                              );
-                              If(
-                                  !IsBlank(varMailMaWi),
-                                  Office365Outlook.SendEmailV2(
-                                      varMailMaWi,
-                                      "Neue Bestellanforderung #" & varAntrag.ID & " (" & varAntrag.Werk.Value & ")",
-                                      "<p>Folgende Bestellanforderung ist durch die Geschäftsführung freigegeben und kann bestellt werden.</p>" & varMailDetails
-                                  )
-                              );
-                              If(
-                                  !IsBlank(nfMailInfo),
-                                  Office365Outlook.SendEmailV2(
-                                      nfMailInfo,
-                                      "Info: Bestellanforderung #" & varAntrag.ID & " freigegeben",
-                                      "<p>Zur Information: Folgende Bestellanforderung wurde von der Geschäftsführung freigegeben und an die MaWi übergeben.</p>" & varMailDetails
-                                  )
-                              )
-                          );
-                          If(
-                              !IsBlank(Trim(txtEntscheidung.Text)),
+                          =Set(
+                              varAntrag,
                               Patch(
-                                  Kommentare,
-                                  Defaults(Kommentare),
+                                  Antraege,
+                                  varAntrag,
                                   {
-                                      RückfrageTyp: {Value: "Freigabe"},
-                                      RückfrageText: txtEntscheidung.Text,
-                                      Person: {
-                                          Claims: "i:0#.f|membership|" & User().Email,
-                                          Department: "",
-                                          DisplayName: User().FullName,
-                                          Email: User().Email,
-                                          JobTitle: "",
-                                          Picture: ""
-                                      },
-                                      AnforderungsID: {
-                                          Id: varAntrag.ID,
-                                          Value: varAntrag.Titel
+                                      Status: {
+                                          Value: If(varDarfFK && varAntrag.Wert > 5000, "Wartet auf GF", "Bei MaWi")
                                       }
                                   }
                               )
                           );
-                          Notify("Antrag #" & varAntrag.ID & " freigegeben.", NotificationType.Success);
-                          Reset(txtEntscheidung);
+                          Patch(
+                              Kommentare,
+                              Defaults(Kommentare),
+                              {
+                                  RückfrageTyp: {Value: "Freigabe"},
+                                  RückfrageText: Coalesce(Trim(txtEntscheidung.Text), "Freigegeben"),
+                                  Person: {
+                                      Claims: "i:0#.f|membership|" & User().Email,
+                                      Department: "",
+                                      DisplayName: User().FullName,
+                                      Email: User().Email,
+                                      JobTitle: "",
+                                      Picture: ""
+                                  },
+                                  AnforderungsID: {
+                                      Id: varAntrag.ID,
+                                      Value: varAntrag.Titel
+                                  }
+                              }
+                          );
+                          Notify("Antrag freigegeben.", NotificationType.Success);
                           Navigate(scrFreigaben, ScreenTransition.Fade)
                         Text: ="Freigeben"
                         Visible: =varDarfFK || varDarfGF
                         Width: =150
                         X: =20
-                        Y: =160
+                        Y: =140
                   - btnAblehnen:
                       Control: ModernButton@1.0.0
                       Properties:
@@ -660,32 +246,9 @@ Screens:
                         DisplayMode: =If(IsBlank(Trim(txtEntscheidung.Text)), DisplayMode.Disabled, DisplayMode.Edit)
                         Height: =35
                         OnSelect: |-
-                          =If(
-                              varDarfFK,
-                              Set(
-                                  varAntrag,
-                                  Patch(
-                                      Antraege,
-                                      varAntrag,
-                                      {
-                                          Status: {Value: "Abgelehnt"},
-                                          FKName: User().FullName,
-                                          FKDatum: Now()
-                                      }
-                                  )
-                              ),
-                              Set(
-                                  varAntrag,
-                                  Patch(
-                                      Antraege,
-                                      varAntrag,
-                                      {
-                                          Status: {Value: "Abgelehnt"},
-                                          GFName: User().FullName,
-                                          GFDatum: Now()
-                                      }
-                                  )
-                              )
+                          =Set(
+                              varAntrag,
+                              Patch(Antraege, varAntrag, {Status: {Value: "Abgelehnt"}})
                           );
                           Patch(
                               Kommentare,
@@ -707,22 +270,13 @@ Screens:
                                   }
                               }
                           );
-                          Office365Outlook.SendEmailV2(
-                              varAntrag.AntragstellerEmail,
-                              "Bestellanforderung #" & varAntrag.ID & " abgelehnt",
-                              "<p>Hallo " & varAntrag.AntragstellerName & ",</p>" &
-                              "<p>Ihre Bestellanforderung wurde von " & User().FullName & " abgelehnt.</p>" &
-                              "<p><b>Begründung:</b> " & txtEntscheidung.Text & "</p>" &
-                              varMailDetails
-                          );
-                          Notify("Antrag #" & varAntrag.ID & " abgelehnt.", NotificationType.Warning);
-                          Reset(txtEntscheidung);
+                          Notify("Antrag abgelehnt.", NotificationType.Warning);
                           Navigate(scrFreigaben, ScreenTransition.Fade)
                         Text: ="Ablehnen"
                         Visible: =varDarfFK || varDarfGF
                         Width: =150
                         X: =185
-                        Y: =160
+                        Y: =140
                   - btnErledigt:
                       Control: ModernButton@1.0.0
                       Properties:
@@ -731,55 +285,35 @@ Screens:
                         OnSelect: |-
                           =Set(
                               varAntrag,
-                              Patch(
-                                  Antraege,
-                                  varAntrag,
-                                  {
-                                      Status: {Value: "Abgeschlossen"},
-                                      MaWiName: User().FullName,
-                                      MaWiDatum: Now()
+                              Patch(Antraege, varAntrag, {Status: {Value: "Erledigt"}})
+                          );
+                          Patch(
+                              Kommentare,
+                              Defaults(Kommentare),
+                              {
+                                  RückfrageTyp: {Value: "Erledigt"},
+                                  RückfrageText: Coalesce(Trim(txtEntscheidung.Text), "Erledigt"),
+                                  Person: {
+                                      Claims: "i:0#.f|membership|" & User().Email,
+                                      Department: "",
+                                      DisplayName: User().FullName,
+                                      Email: User().Email,
+                                      JobTitle: "",
+                                      Picture: ""
+                                  },
+                                  AnforderungsID: {
+                                      Id: varAntrag.ID,
+                                      Value: varAntrag.Titel
                                   }
-                              )
+                              }
                           );
-                          If(
-                              !IsBlank(Trim(txtEntscheidung.Text)),
-                              Patch(
-                                  Kommentare,
-                                  Defaults(Kommentare),
-                                  {
-                                      RückfrageTyp: {Value: "Erledigt"},
-                                      RückfrageText: txtEntscheidung.Text,
-                                      Person: {
-                                          Claims: "i:0#.f|membership|" & User().Email,
-                                          Department: "",
-                                          DisplayName: User().FullName,
-                                          Email: User().Email,
-                                          JobTitle: "",
-                                          Picture: ""
-                                      },
-                                      AnforderungsID: {
-                                          Id: varAntrag.ID,
-                                          Value: varAntrag.Titel
-                                      }
-                                  }
-                              )
-                          );
-                          Office365Outlook.SendEmailV2(
-                              varAntrag.AntragstellerEmail,
-                              "Bestellanforderung #" & varAntrag.ID & " erledigt",
-                              "<p>Hallo " & varAntrag.AntragstellerName & ",</p>" &
-                              "<p>Ihre Bestellanforderung wurde von der MaWi (" & User().FullName & ") bearbeitet.</p>" &
-                              If(IsBlank(Trim(txtEntscheidung.Text)), "", "<p><b>Kommentar:</b> " & txtEntscheidung.Text & "</p>") &
-                              varMailDetails
-                          );
-                          Notify("Antrag #" & varAntrag.ID & " abgeschlossen.", NotificationType.Success);
-                          Reset(txtEntscheidung);
+                          Notify("Antrag erledigt.", NotificationType.Success);
                           Navigate(scrFreigaben, ScreenTransition.Fade)
-                        Text: ="Als erledigt markieren"
+                        Text: ="Erledigt"
                         Visible: =varDarfMaWi
-                        Width: =200
+                        Width: =150
                         X: =20
-                        Y: =160
+                        Y: =140
             - Container_Kommentar:
                 Control: GroupContainer@1.5.0
                 Variant: ManualLayout
@@ -791,7 +325,7 @@ Screens:
                   Height: =Max(200, Parent.Height - Self.Y - 10)
                   Width: =520
                   X: =Max(280, (Parent.Width - 1060) / 2) + 540
-                  Y: =265
+                  Y: =If(Card_Aktion.Visible, 235, 20)
                 Children:
                   - Label_LeerHinweis:
                       Control: Label@2.5.1
@@ -882,13 +416,9 @@ Screens:
                         Fill: =AppTheme.White
                         Height: =If(varKommentarOffen, Parent.Height - 85, Parent.Height - 35)
                         Items: |-
-                          =Sort(
-                              Filter(
-                                  Kommentare,
-                                  AnforderungsID.Id = varAntrag.ID
-                              ),
-                              ID,
-                              SortOrder.Ascending
+                          =Filter(
+                              Kommentare,
+                              AnforderungsID.Id = varAntrag.ID
                           )
                         TemplateSize: =55
                         Visible: |-
@@ -905,24 +435,11 @@ Screens:
                             Control: ModernButton@1.0.0
                             Properties:
                               BasePaletteColor: =AppTheme.LightRed
-                              DisplayMode: |-
-                                =If(
-                                    ThisItem.Person.Email = User().Email,
-                                    DisplayMode.Edit,
-                                    DisplayMode.Disabled
-                                )
                               Height: =25
                               Icon: =Icon.Trash
-                              OnSelect: |-
-                                =Remove(
-                                    Kommentare,
-                                    ThisItem
-                                )
+                              OnSelect: =Remove(Kommentare, ThisItem)
                               Text: =""
-                              Visible: |-
-                                =ThisItem.Person.Email = User().Email
-                                    && ThisItem.RückfrageTyp.Value = "Info"
-                                    && !(varAntrag.Status.Value in ["Abgeschlossen", "Abgelehnt"])
+                              Visible: =ThisItem.Person.Email = User().Email && ThisItem.RückfrageTyp.Value = "Info"
                               Width: =25
                               X: =Parent.TemplateWidth - 40
                               Y: =15
@@ -949,10 +466,7 @@ Screens:
                                 );
                                 Set(varEditKommentarID, 0)
                               Text: =""
-                              Visible: |-
-                                =ThisItem.Person.Email = User().Email
-                                    && ThisItem.RückfrageTyp.Value = "Info"
-                                    && !(varAntrag.Status.Value in ["Abgeschlossen", "Abgelehnt"])
+                              Visible: =ThisItem.Person.Email = User().Email && ThisItem.RückfrageTyp.Value = "Info"
                               Width: =25
                               X: =Parent.TemplateWidth - 70
                               Y: =15
@@ -974,10 +488,7 @@ Screens:
                                     Set(varEditKommentarID, ThisItem.ID)
                                 )
                               Text: =""
-                              Visible: |-
-                                =ThisItem.Person.Email = User().Email
-                                    && ThisItem.RückfrageTyp.Value = "Info"
-                                    && !(varAntrag.Status.Value in ["Abgeschlossen", "Abgelehnt"])
+                              Visible: =ThisItem.Person.Email = User().Email && ThisItem.RückfrageTyp.Value = "Info"
                               Width: =25
                               X: =Parent.TemplateWidth - 100
                               Y: =15
@@ -1001,14 +512,7 @@ Screens:
                         - Label_Kommentar_Person:
                             Control: Label@2.5.1
                             Properties:
-                              Color: |-
-                                =Switch(
-                                    ThisItem.RückfrageTyp.Value,
-                                    "Ablehnung", AppTheme.LightRed,
-                                    "Freigabe", AppTheme.DarkGreen,
-                                    "Erledigt", AppTheme.DarkGreen,
-                                    AppTheme.DarkGray
-                                )
+                              Color: =AppTheme.DarkGray
                               Fill: =AppTheme.White
                               Font: =Font.'Open Sans'
                               FontWeight: =FontWeight.Semibold
@@ -1017,8 +521,7 @@ Screens:
                               PaddingBottom: =0
                               PaddingTop: =0
                               Size: =9
-                              Text: |-
-                                =ThisItem.Person.DisplayName & " | " & Text(ThisItem.Erstellt, "dd.mm.yyyy hh:mm") & " | " & ThisItem.RückfrageTyp.Value
+                              Text: =ThisItem.Person.DisplayName & " | " & ThisItem.Erstellt & " | " & ThisItem.RückfrageTyp.Value
                               VerticalAlign: =VerticalAlign.Top
                               Width: =Parent.TemplateWidth - 110
                               X: =1

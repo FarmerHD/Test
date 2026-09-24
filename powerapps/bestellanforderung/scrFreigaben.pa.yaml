@@ -4,19 +4,11 @@ Screens:
       Fill: =AppTheme.NearWhite
       LoadingSpinnerColor: =AppTheme.DarkBlue
       OnVisible: |
-        =Set(varAktuelleSeite, "Freigaben");
-        ClearCollect(
-            colAufgaben,
-            Filter(Antraege, Status.Value = "Wartet auf FK", FKEmail = User().Email)
-        );
-        If(
-            nfIstGF,
-            Collect(colAufgaben, Filter(Antraege, Status.Value = "Wartet auf GF"))
-        );
-        ForAll(
-            nfMaWiWerke As w,
-            Collect(colAufgaben, Filter(Antraege, Status.Value = "Bei MaWi", Werk.Value = w.Werk.Value))
-        )
+        =Set(varIstGF, !IsBlank(LookUp(Rollen, Rolle.Value = "GF" && Person.Email = User().Email)));
+        Set(varIstMaWi, !IsBlank(LookUp(Rollen, Rolle.Value = "MaWi" && Person.Email = User().Email)));
+        ClearCollect(colAufgaben, Filter(Antraege, Status.Value = "Wartet auf FK", Vorgesetzter.Email = User().Email));
+        If(varIstGF, Collect(colAufgaben, Filter(Antraege, Status.Value = "Wartet auf GF")));
+        If(varIstMaWi, Collect(colAufgaben, Filter(Antraege, Status.Value = "Bei MaWi")))
     Children:
       - Container_Header_F:
           Control: GroupContainer@1.5.0
@@ -49,97 +41,17 @@ Screens:
             Width: =Parent.Width
             Y: =32
           Children:
-            - Card_Freigaben:
-                Control: GroupContainer@1.5.0
-                Variant: ManualLayout
+            - lblFreigabenHeading:
+                Control: Label@2.5.1
                 Properties:
-                  BorderColor: =AppTheme.PaleGray
-                  BorderThickness: =1
-                  DropShadow: =DropShadow.None
-                  Fill: =AppTheme.White
-                  Height: =110
-                  Width: =620
-                  X: =(Parent.Width - Self.Width) / 2
+                  Color: =AppTheme.DarkBlue
+                  FontWeight: =FontWeight.Bold
+                  Height: =30
+                  Size: =18
+                  Text: ="Offene Freigaben (" & CountRows(colAufgaben) & ")"
+                  Width: =400
+                  X: =(Parent.Width - 620) / 2
                   Y: =20
-                Children:
-                  - lblFreigabenHeading:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.DarkBlue
-                        FontWeight: =FontWeight.Bold
-                        Height: =30
-                        Size: =18
-                        Text: ="Offene Aufgaben"
-                        Width: =400
-                        X: =24
-                        Y: =16
-                  - lblRollen:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =24
-                        Size: =10
-                        Text: |-
-                          ="Meine Rollen: Führungskraft" &
-                          If(nfIstGF, ", Geschäftsführung", "") &
-                          If(CountRows(nfMaWiWerke) > 0, ", MaWi (" & Concat(nfMaWiWerke, Werk.Value, ", ") & ")", "")
-                        Width: =420
-                        X: =24
-                        Y: =62
-                  - btnAktualisieren_F:
-                      Control: ModernButton@1.0.0
-                      Properties:
-                        BasePaletteColor: =AppTheme.LightBlue
-                        Height: =32
-                        OnSelect: |-
-                          =ClearCollect(
-                              colAufgaben,
-                              Filter(Antraege, Status.Value = "Wartet auf FK", FKEmail = User().Email)
-                          );
-                          If(
-                              nfIstGF,
-                              Collect(colAufgaben, Filter(Antraege, Status.Value = "Wartet auf GF"))
-                          );
-                          ForAll(
-                              nfMaWiWerke As w,
-                              Collect(colAufgaben, Filter(Antraege, Status.Value = "Bei MaWi", Werk.Value = w.Werk.Value))
-                          )
-                        Text: ="Aktualisieren"
-                        Width: =130
-                        X: =466
-                        Y: =58
-            - lblErgebnisseTitel_F:
-                Control: Label@2.5.1
-                Properties:
-                  Color: =AppTheme.MidGray
-                  Height: =20
-                  Size: =10
-                  Text: ="AUFGABEN"
-                  Width: =300
-                  X: =(Parent.Width - 620) / 2
-                  Y: =146
-            - lblAnzahl_F:
-                Control: Label@2.5.1
-                Properties:
-                  Align: =Align.Right
-                  Color: =AppTheme.MidGray
-                  Height: =24
-                  Size: =11
-                  Text: =CountRows(colAufgaben) & " offen"
-                  Width: =300
-                  X: =(Parent.Width - 620) / 2 + 320
-                  Y: =142
-            - lblKeineAufgaben:
-                Control: Label@2.5.1
-                Properties:
-                  Align: =Align.Center
-                  Color: =AppTheme.MidGray
-                  Height: =40
-                  Text: ="Keine offenen Aufgaben."
-                  Visible: =CountRows(colAufgaben) = 0
-                  Width: =620
-                  X: =(Parent.Width - 620) / 2
-                  Y: =190
             - galAufgaben:
                 Control: Gallery@2.15.0
                 Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
@@ -149,83 +61,52 @@ Screens:
                   Fill: =AppTheme.White
                   Height: =Parent.Height - Self.Y - 20
                   Items: =Sort(colAufgaben, ID, SortOrder.Descending)
-                  TemplateSize: =90
-                  Visible: =CountRows(colAufgaben) > 0
+                  TemplateSize: =70
                   Width: =620
                   X: =(Parent.Width - 620) / 2
-                  Y: =170
+                  Y: =60
                 Children:
-                  - lblNrWert_F:
+                  - lblNr_F:
                       Control: Label@2.5.1
                       Properties:
                         Color: =AppTheme.DarkGray
                         FontWeight: =FontWeight.Semibold
                         Height: =20
-                        Text: |-
-                          ="#" & ThisItem.ID
-                        Width: =60
+                        Text: ="Nr. " & ThisItem.ID
+                        Width: =80
                         X: =10
-                        Y: =8
-                  - lblAntragstellerWert_F:
+                        Y: =10
+                  - lblAntragsteller_F:
                       Control: Label@2.5.1
                       Properties:
                         Color: =AppTheme.DarkGray
                         Height: =20
-                        Text: =ThisItem.AntragstellerName
+                        Text: =ThisItem.Antragsteller.DisplayName
                         Width: =200
-                        X: =80
-                        Y: =8
-                  - lblArtikelWert_F:
+                        X: =100
+                        Y: =10
+                  - lblArtikel_F:
                       Control: Label@2.5.1
                       Properties:
                         Color: =AppTheme.MidGray
                         Height: =20
                         Size: =10
-                        Text: |-
-                          =ThisItem.Artikelnummer & " · " & ThisItem.Stueckzahl & " Stk. · " & ThisItem.Werk.Value
-                        Width: =300
-                        X: =80
-                        Y: =30
-                  - lblWertWert_F:
-                      Control: Label@2.5.1
-                      Properties:
-                        Align: =Align.Right
-                        Color: =If(ThisItem.Wert > nfWertgrenze, AppTheme.DarkYellow, AppTheme.DarkGray)
-                        FontWeight: =FontWeight.Semibold
-                        Height: =20
-                        Text: =Text(ThisItem.Wert, "#,##0.00", "de-DE") & " €"
-                        Width: =110
-                        X: =390
-                        Y: =8
-                  - lblStufeWert_F:
+                        Text: =ThisItem.Artikelnummer & " · " & ThisItem.Stueckzahl & " Stk. · " & Text(ThisItem.Wert, "#,##0.00") & " €"
+                        Width: =260
+                        X: =100
+                        Y: =36
+                  - lblStatus_F:
                       Control: Label@2.5.1
                       Properties:
                         Align: =Align.Center
                         Color: =AppTheme.White
-                        Fill: =If(ThisItem.Status.Value = "Bei MaWi", AppTheme.LightBlue, AppTheme.DarkYellow)
+                        Fill: =AppTheme.DarkYellow
                         Height: =22
                         Size: =10
-                        Text: |-
-                          =Switch(
-                              ThisItem.Status.Value,
-                              "Wartet auf FK", "Freigabe FK",
-                              "Wartet auf GF", "Freigabe GF",
-                              "Bei MaWi", "Bearbeitung MaWi",
-                              ThisItem.Status.Value
-                          )
-                        Width: =160
-                        X: =10
-                        Y: =58
-                  - lblErstelltWert_F:
-                      Control: Label@2.5.1
-                      Properties:
-                        Color: =AppTheme.MidGray
-                        Height: =22
-                        Size: =10
-                        Text: ="Eingereicht am " & Text(ThisItem.Erstellt, "dd.mm.yyyy")
-                        Width: =200
-                        X: =180
-                        Y: =58
+                        Text: =ThisItem.Status.Value
+                        Width: =130
+                        X: =370
+                        Y: =24
                   - btnOeffnen_F:
                       Control: ModernButton@1.0.0
                       Properties:
@@ -237,7 +118,7 @@ Screens:
                         Text: ="Prüfen"
                         Width: =90
                         X: =510
-                        Y: =30
+                        Y: =20
             - btnNavAntrag_F:
                 Control: ModernButton@1.0.0
                 Properties:
